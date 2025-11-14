@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} Webhook - Product Importer{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-0">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">
+            <i class="fas fa-{% if action == 'Create' %}plus{% else %}edit{% endif %} text-indigo-600 mr-2"></i>
+            {{ action }} Webhook
+        </h1>
+    </div>
+
+    <div class="bg-white shadow rounded-lg p-6">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="space-y-6">
+                <div>
+                    <label for="url" class="block text-sm font-medium text-gray-700 mb-2">
+                        Webhook URL <span class="text-red-500">*</span>
+                    </label>
+                    <input type="url" 
+                           name="url" 
+                           id="url" 
+                           value="{{ webhook.url|default:'' }}"
+                           required
+                           placeholder="https://example.com/webhook"
+                           class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    <p class="mt-1 text-xs text-gray-500">The endpoint URL to send webhook POST requests to</p>
+                </div>
+                
+                <div>
+                    <label for="event_type" class="block text-sm font-medium text-gray-700 mb-2">
+                        Event Type <span class="text-red-500">*</span>
+                    </label>
+                    <select name="event_type" 
+                            id="event_type" 
+                            required
+                            class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">Select an event...</option>
+                        <option value="product.created" {% if webhook.event_type == 'product.created' %}selected{% endif %}>Product Created</option>
+                        <option value="product.updated" {% if webhook.event_type == 'product.updated' %}selected{% endif %}>Product Updated</option>
+                        <option value="product.deleted" {% if webhook.event_type == 'product.deleted' %}selected{% endif %}>Product Deleted</option>
+                        <option value="product.bulk_deleted" {% if webhook.event_type == 'product.bulk_deleted' %}selected{% endif %}>Products Bulk Deleted</option>
+                        <option value="upload.started" {% if webhook.event_type == 'upload.started' %}selected{% endif %}>Upload Started</option>
+                        <option value="upload.completed" {% if webhook.event_type == 'upload.completed' %}selected{% endif %}>Upload Completed</option>
+                        <option value="upload.failed" {% if webhook.event_type == 'upload.failed' %}selected{% endif %}>Upload Failed</option>
+                    </select>
+                    <p class="mt-1 text-xs text-gray-500">The type of event that triggers this webhook</p>
+                </div>
+                
+                <div>
+                    <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
+                        Description
+                    </label>
+                    <textarea name="description" 
+                              id="description" 
+                              rows="3"
+                              placeholder="Optional description of what this webhook does..."
+                              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">{{ webhook.description|default:'' }}</textarea>
+                </div>
+                
+                <div>
+                    <label class="flex items-center">
+                        <input type="checkbox" 
+                               name="is_active" 
+                               id="is_active" 
+                               {% if action == 'Create' or webhook.is_active %}checked{% endif %}
+                               class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
+                        <span class="ml-2 text-sm text-gray-700">Active</span>
+                    </label>
+                    <p class="mt-1 ml-6 text-xs text-gray-500">Whether this webhook is enabled and will receive events</p>
+                </div>
+                
+                {% if webhook.secret %}
+                <div class="bg-gray-50 p-4 rounded-md">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-key mr-1"></i>Secret Key
+                    </label>
+                    <div class="flex items-center space-x-2">
+                        <code class="flex-1 px-3 py-2 bg-white border border-gray-300 rounded text-xs font-mono break-all">
+                            {{ webhook.secret }}
+                        </code>
+                        <button type="button" 
+                                onclick="copySecret()"
+                                class="px-3 py-2 border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-100">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                    <p class="mt-2 text-xs text-gray-500">
+                        <i class="fas fa-info-circle mr-1"></i>Use this secret to verify webhook signatures (HMAC-SHA256)
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="mt-6 flex justify-end space-x-3">
+                <a href="{% url 'webhooks:list' %}" 
+                   class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    Cancel
+                </a>
+                <button type="submit" 
+                        class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
+                    <i class="fas fa-save mr-2"></i>{{ action }} Webhook
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function copySecret() {
+        const secret = '{{ webhook.secret }}';
+        navigator.clipboard.writeText(secret).then(() => {
+            showToast('Secret key copied to clipboard!', 'success');
+        }).catch(() => {
+            showToast('Failed to copy secret', 'error');
+        });
+    }
+</script>
+{% endblock %}
