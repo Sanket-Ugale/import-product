@@ -41,7 +41,7 @@ A scalable web application for importing and managing 500K+ products from CSV fi
 ### 1. Clone the repository
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/sanket-ugale/import-product.git
 cd import-product
 ```
 
