@@ -41,8 +41,8 @@ A scalable web application for importing and managing 500K+ products from CSV fi
 ### 1. Clone the repository
 
 ```bash
-git clone <your-repo-url>
-cd fulfil
+git clone https://github.com/sanket-ugale/import-product.git
+cd import-product
 ```
 
 ### 2. Set up environment variables
@@ -84,36 +84,6 @@ docker-compose exec web python manage.py createsuperuser
 - **Admin Panel**: http://localhost:8000/admin
 - **Flower (Celery Monitor)**: http://localhost:5555
 
-## 📁 Project Structure
-
-```
-fulfil/
-├── config/                 # Django settings & configuration
-│   ├── settings/
-│   │   ├── base.py
-│   │   ├── development.py
-│   │   └── production.py
-│   ├── celery.py          # Celery configuration
-│   ├── urls.py
-│   └── wsgi.py
-├── products/              # Product management app
-│   ├── models.py          # Product, UploadJob, AuditLog models
-│   ├── views.py           # Product views
-│   ├── tasks.py           # Celery tasks for CSV import
-│   ├── services/          # Business logic layer
-│   └── templates/         # Product templates
-├── webhooks/              # Webhook management app
-│   ├── models.py          # Webhook models
-│   ├── views.py           # Webhook views
-│   ├── tasks.py           # Webhook delivery tasks
-│   └── templates/         # Webhook templates
-├── templates/             # Global templates
-├── static/                # Global static files
-├── media/                 # Uploaded files
-├── docker-compose.yml     # Docker orchestration
-├── Dockerfile            # Docker image definition
-└── requirements.txt       # Python dependencies
-```
 
 ## 🔧 Development
 
@@ -238,53 +208,3 @@ Access admin at http://localhost:8000/admin to view:
 - Webhooks
 - Audit logs
 - Webhook logs
-
-## 🚀 Deployment
-
-### Render.com (Recommended)
-
-1. Create a new Web Service
-2. Connect your GitHub repository
-3. Set environment variables
-4. Deploy
-
-See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for detailed deployment instructions.
-
-### Other Platforms
-
-The application can be deployed to:
-- Railway
-- Heroku
-- AWS/GCP
-- DigitalOcean
-
-## 🧪 Testing
-
-```bash
-# Run all tests
-docker-compose exec web python manage.py test
-
-# Run specific app tests
-docker-compose exec web python manage.py test products
-docker-compose exec web python manage.py test webhooks
-
-# Run with coverage
-docker-compose exec web coverage run --source='.' manage.py test
-docker-compose exec web coverage report
-```
-
-## 📝 License
-
-This project is created for Fulfil.io assignment.
-
-## 👨‍💻 Developer
-
-Developed as part of Fulfil.io SDE-1 Python Full Stack assignment.
-
-## 📞 Support
-
-For issues or questions, please create an issue in the repository.
-
----
-
-**Built with ❤️ using Django, Celery, PostgreSQL, Redis, and Docker**
