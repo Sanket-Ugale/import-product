@@ -163,6 +163,9 @@ CACHES = {
     }
 }
 
+# Enable/Disable Caching
+ENABLE_CACHING = config('ENABLE_CACHING', default=True, cast=bool)
+
 # Session Configuration
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 SESSION_CACHE_ALIAS = 'default'

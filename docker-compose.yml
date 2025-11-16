@@ -38,8 +38,8 @@ services:
       - .:/app
       - static_volume:/app/staticfiles
       - media_volume:/app/media
-    # Run Django on port 8050 (inside container and mapped to host)
-    command: python manage.py runserver 0.0.0.0:8050
+    # Run Django with Gunicorn (4 workers, 2 threads each = 8 concurrent requests)
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8050 --workers 4 --threads 2 --timeout 300 --access-logfile - --error-logfile - --log-level info
     ports:
       - "8050:8050"
     env_file:
@@ -51,10 +51,58 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
-  celery:
+  celery_worker_1:
     build: .
-    container_name: product_importer_celery
-    command: celery -A config worker --loglevel=info --concurrency=4
+    container_name: product_importer_celery_1
+    command: celery -A config worker --loglevel=info --concurrency=2 -n worker1@%h
+    volumes:
+      - .:/app
+      - media_volume:/app/media
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  celery_worker_2:
+    build: .
+    container_name: product_importer_celery_2
+    command: celery -A config worker --loglevel=info --concurrency=2 -n worker2@%h
+    volumes:
+      - .:/app
+      - media_volume:/app/media
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  celery_worker_3:
+    build: .
+    container_name: product_importer_celery_3
+    command: celery -A config worker --loglevel=info --concurrency=2 -n worker3@%h
+    volumes:
+      - .:/app
+      - media_volume:/app/media
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  celery_worker_4:
+    build: .
+    container_name: product_importer_celery_4
+    command: celery -A config worker --loglevel=info --concurrency=2 -n worker4@%h
     volumes:
       - .:/app
       - media_volume:/app/media
@@ -89,7 +137,10 @@ services:
       - .env
     depends_on:
       - redis
-      - celery
+      - celery_worker_1
+      - celery_worker_2
+      - celery_worker_3
+      - celery_worker_4
     restart: unless-stopped
 
 volumes:

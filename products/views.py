@@ -4,24 +4,39 @@ from django.core.paginator import Paginator
 from django.db.models import Q, Count
 from django.http import JsonResponse, StreamingHttpResponse, HttpResponse
 from django.views.decorators.http import require_http_methods, require_POST
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.utils import timezone
 from django.core.files.storage import default_storage
+from django.core.cache import cache
 import json
 import time
 import csv
 
 from .models import Product, UploadJob, AuditLog
 from .tasks import process_csv_import, bulk_delete_products, export_products_csv, trigger_webhooks
+from .services.cache_service import ProductCacheService
 from webhooks.models import Webhook
 
 
+@ensure_csrf_cookie
 def product_list(request):
-    """Display paginated list of products with search and filters."""
+    """Display paginated list of products with search and filters (with caching)."""
+    # Get query parameters
+    search_query = request.GET.get('search', '').strip()
+    status_filter = request.GET.get('status', '')
+    sort_by = request.GET.get('sort_by', 'updated_at')
+    order = request.GET.get('order', 'desc')
+    page_number = request.GET.get('page', 1)
+    
+    # Validate sort_by to prevent SQL injection
+    allowed_sort_fields = ['updated_at', 'created_at', 'name', 'sku']
+    if sort_by not in allowed_sort_fields:
+        sort_by = 'updated_at'
+    
+    # Build queryset
     products = Product.objects.all()
     
     # Search
-    search_query = request.GET.get('search', '').strip()
     if search_query:
         products = products.filter(
             Q(sku__icontains=search_query) | 
@@ -29,20 +44,10 @@ def product_list(request):
         )
     
     # Status filter
-    status_filter = request.GET.get('status', '')
     if status_filter == 'active':
         products = products.filter(is_active=True)
     elif status_filter == 'inactive':
         products = products.filter(is_active=False)
-    
-    # Sort by and order
-    sort_by = request.GET.get('sort_by', 'updated_at')
-    order = request.GET.get('order', 'desc')
-    
-    # Validate sort_by to prevent SQL injection
-    allowed_sort_fields = ['updated_at', 'created_at', 'name', 'sku']
-    if sort_by not in allowed_sort_fields:
-        sort_by = 'updated_at'
     
     # Apply sorting
     if order == 'asc':
@@ -50,37 +55,55 @@ def product_list(request):
     else:
         products = products.order_by(f'-{sort_by}')
     
-    # Stats
-    total_count = Product.objects.count()
-    active_count = Product.objects.filter(is_active=True).count()
-    inactive_count = Product.objects.filter(is_active=False).count()
-    last_updated = Product.objects.order_by('-updated_at').first()
-    
     # Pagination
     paginator = Paginator(products, 50)  # 50 products per page
-    page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
+    
+    # Get cached stats
+    def get_stats():
+        return {
+            'total_count': Product.objects.count(),
+            'active_count': Product.objects.filter(is_active=True).count(),
+            'inactive_count': Product.objects.filter(is_active=False).count(),
+            'last_updated': Product.objects.order_by('-updated_at').first(),
+        }
+    
+    stats = ProductCacheService.get_cached_product_stats(get_stats)
     
     context = {
         'products': page_obj,
-        'total_count': total_count,
-        'active_count': active_count,
-        'inactive_count': inactive_count,
-        'last_updated': last_updated.updated_at if last_updated else None,
+        'total_count': stats['total_count'],
+        'active_count': stats['active_count'],
+        'inactive_count': stats['inactive_count'],
+        'last_updated': stats['last_updated'].updated_at if stats['last_updated'] else None,
     }
     
     return render(request, 'products/list.html', context)
 
 
+@ensure_csrf_cookie
 def product_detail(request, pk):
-    """Display product details."""
-    product = get_object_or_404(Product, pk=pk)
+    """Display product details (with caching)."""
+    def get_product_data():
+        product = get_object_or_404(Product, pk=pk)
+        return {
+            'id': product.id,
+            'sku': product.sku,
+            'name': product.name,
+            'description': product.description,
+            'is_active': product.is_active,
+            'created_at': product.created_at,
+            'updated_at': product.updated_at,
+        }
     
-    # Get audit logs for this product using the SKU
-    audit_logs = AuditLog.objects.filter(product_sku=product.sku).order_by('-timestamp')[:10]
+    # Get cached product data
+    product_data = ProductCacheService.get_cached_product_detail(pk, get_product_data)
+    
+    # Get audit logs (not cached as they're frequently updated)
+    audit_logs = AuditLog.objects.filter(product_sku=product_data['sku']).order_by('-timestamp')[:10]
     
     context = {
-        'product': product,
+        'product': type('Product', (), product_data)(),  # Convert dict to object for template
         'audit_logs': audit_logs,
     }
     
@@ -185,6 +208,7 @@ def product_delete(request, pk):
         }, status=400)
 
 
+@ensure_csrf_cookie
 def upload_csv(request):
     """Handle CSV file upload and initiate processing."""
     if request.method == 'POST':
@@ -325,6 +349,9 @@ def bulk_activate(request):
         
         count = Product.objects.filter(id__in=product_ids).update(is_active=True)
         
+        # Invalidate cache for affected products
+        ProductCacheService.invalidate_products(product_ids)
+        
         # Trigger webhook
         if count > 0:
             trigger_webhooks.delay('product.updated', {
@@ -354,6 +381,9 @@ def bulk_deactivate(request):
         skus = list(Product.objects.filter(id__in=product_ids).values_list('sku', flat=True))
         
         count = Product.objects.filter(id__in=product_ids).update(is_active=False)
+        
+        # Invalidate cache for affected products
+        ProductCacheService.invalidate_products(product_ids)
         
         # Trigger webhook
         if count > 0:

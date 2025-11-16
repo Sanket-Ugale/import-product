@@ -79,6 +79,7 @@ def bulk_delete_products(product_ids):
         Number of products deleted
     """
     from products.models import Product, AuditLog
+    from products.services.cache_service import ProductCacheService
     
     try:
         logger.info(f"Starting bulk delete of {len(product_ids)} products")
@@ -104,6 +105,9 @@ def bulk_delete_products(product_ids):
         
         # Delete products
         products.delete()
+        
+        # Invalidate cache
+        ProductCacheService.invalidate_all_product_caches()
         
         logger.info(f"Bulk delete completed: {count} products deleted")
         
@@ -193,6 +197,7 @@ def update_product_stats():
     For dashboard and analytics
     """
     from products.models import Product, UploadJob
+    from products.services.cache_service import ProductCacheService
     from django.db.models import Count, Q
     
     try:
@@ -207,6 +212,7 @@ def update_product_stats():
             'failed_uploads': UploadJob.objects.filter(status='failed').count(),
         }
         
+        # Use cache service to store stats
         cache.set('product_stats', stats, timeout=300)  # 5 minutes
         logger.info("Product stats updated")
         
