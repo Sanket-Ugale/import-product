@@ -17,6 +17,27 @@ DEBUG = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 
+# CSRF Configuration
+CSRF_TRUSTED_ORIGINS = [
+    'https://fulfil.sanketugale.tech',
+    'https://api.obsedian.live',
+    'http://localhost:8000',
+    'http://localhost:8050',
+    'http://127.0.0.1:8000',
+    'http://127.0.0.1:8050',
+]
+
+# CSRF Cookie settings for HTTPS
+CSRF_COOKIE_SECURE = False  # Set to True only in production with HTTPS
+CSRF_COOKIE_HTTPONLY = False  # Must be False so JavaScript can read it
+CSRF_COOKIE_SAMESITE = 'Lax'  # Can be 'Lax' or 'None' for cross-origin
+CSRF_USE_SESSIONS = False  # Use cookie-based CSRF tokens
+
+# Session Cookie settings
+SESSION_COOKIE_SECURE = False  # Set to True only in production with HTTPS
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',

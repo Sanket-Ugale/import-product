@@ -158,6 +158,57 @@
         .spinner {
             animation: spin 1s linear infinite;
         }
+        
+        /* Uniform form controls */
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        input[type="number"],
+        select,
+        textarea {
+            height: 42px;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+        
+        textarea {
+            height: auto;
+            min-height: 42px;
+        }
+        
+        /* Custom select dropdown arrow */
+        select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%236B7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+        }
+        
+        /* Form focus states */
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #6366f1;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        /* Placeholder styling */
+        ::placeholder {
+            color: #9ca3af;
+            opacity: 1;
+        }
+        
+        /* Disabled state */
+        input:disabled,
+        select:disabled,
+        textarea:disabled,
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
     </style>
     
     {% block extra_css %}{% endblock %}
@@ -274,7 +325,7 @@
             <div class="flex justify-between items-center">
                 <p class="text-sm text-gray-500">
                     <i class="fas fa-copyright mr-1"></i>
-                    2025 Product Importer
+                    2025 Product Importer - Built for Fulfil.io Assignment
                 </p>
                 <div class="flex space-x-6">
                     <a href="https://github.com/sanket-ugale/import-product" target="_blank" class="text-gray-400 hover:text-gray-500">

@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load humanize %}
+{% load product_extras %}
 
 {% block title %}Products - Product Importer{% endblock %}
 
@@ -71,7 +72,7 @@
                             <dd class="flex items-baseline">
                                 <div class="text-2xl font-bold text-gray-900">{{ active_count|default:0|intcomma }}</div>
                                 <span class="ml-2 text-xs font-medium text-gray-500">
-                                    {% widthratio active_count total_count 100 %}%
+                                    {{ active_count|percentage:total_count }}%
                                 </span>
                             </dd>
                         </dl>
@@ -94,7 +95,7 @@
                             <dd class="flex items-baseline">
                                 <div class="text-2xl font-bold text-gray-900">{{ inactive_count|default:0|intcomma }}</div>
                                 <span class="ml-2 text-xs font-medium text-gray-500">
-                                    {% widthratio inactive_count total_count 100 %}%
+                                    {{ inactive_count|percentage:total_count }}%
                                 </span>
                             </dd>
                         </dl>
@@ -149,7 +150,7 @@
                            id="search" 
                            value="{{ request.GET.search }}"
                            placeholder="Search by SKU or name..."
-                           class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-400 focus:outline-none focus:placeholder-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all duration-200">
+                           class="block w-full h-[42px] pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-400 focus:outline-none focus:placeholder-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all duration-200 shadow-sm hover:border-gray-400">
                 </div>
             </div>
             
@@ -159,7 +160,7 @@
                 </label>
                 <select name="status" 
                         id="status"
-                        class="block w-full py-2.5 px-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all duration-200">
+                        class="block w-full h-[42px] py-2.5 px-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all duration-200 hover:border-gray-400 cursor-pointer">
                     <option value="">All</option>
                     <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Active</option>
                     <option value="inactive" {% if request.GET.status == 'inactive' %}selected{% endif %}>Inactive</option>
@@ -172,7 +173,7 @@
                 </label>
                 <select name="sort_by" 
                         id="sort_by"
-                        class="block w-full py-2.5 px-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all duration-200">
+                        class="block w-full h-[42px] py-2.5 px-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all duration-200 hover:border-gray-400 cursor-pointer">
                     <option value="updated_at" {% if request.GET.sort_by == 'updated_at' or not request.GET.sort_by %}selected{% endif %}>Updated Date</option>
                     <option value="created_at" {% if request.GET.sort_by == 'created_at' %}selected{% endif %}>Created Date</option>
                     <option value="name" {% if request.GET.sort_by == 'name' %}selected{% endif %}>Name</option>
@@ -186,7 +187,7 @@
                 </label>
                 <select name="order" 
                         id="order"
-                        class="block w-full py-2.5 px-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all duration-200">
+                        class="block w-full h-[42px] py-2.5 px-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all duration-200 hover:border-gray-400 cursor-pointer">
                     <option value="desc" {% if request.GET.order == 'desc' or not request.GET.order %}selected{% endif %}>Descending</option>
                     <option value="asc" {% if request.GET.order == 'asc' %}selected{% endif %}>Ascending</option>
                 </select>
@@ -194,11 +195,11 @@
             
             <div class="flex items-end space-x-2">
                 <button type="submit" 
-                        class="flex-1 inline-flex justify-center items-center px-4 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white gradient-indigo hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 btn-hover-lift">
+                        class="flex-1 inline-flex justify-center items-center px-4 h-[42px] border border-transparent rounded-lg shadow-sm text-sm font-medium text-white gradient-indigo hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 btn-hover-lift">
                     <i class="fas fa-filter mr-2"></i>Apply
                 </button>
                 <a href="{% url 'products:list' %}" 
-                   class="inline-flex items-center px-4 py-2.5 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 btn-hover-lift"
+                   class="inline-flex items-center justify-center px-4 h-[42px] border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 btn-hover-lift"
                    title="Clear filters">
                     <i class="fas fa-redo"></i>
                 </a>
