@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q, Count
 from django.http import JsonResponse, StreamingHttpResponse, HttpResponse
@@ -18,6 +19,7 @@ from .services.cache_service import ProductCacheService
 from webhooks.models import Webhook
 
 
+@login_required(login_url='login')
 @ensure_csrf_cookie
 def product_list(request):
     """Display paginated list of products with search and filters (with caching)."""
@@ -81,6 +83,7 @@ def product_list(request):
     return render(request, 'products/list.html', context)
 
 
+@login_required(login_url='login')
 @ensure_csrf_cookie
 def product_detail(request, pk):
     """Display product details (with caching)."""
@@ -110,6 +113,7 @@ def product_detail(request, pk):
     return render(request, 'products/detail.html', context)
 
 
+@login_required(login_url='login')
 def product_create(request):
     """Create a new product."""
     if request.method == 'POST':
@@ -138,6 +142,7 @@ def product_create(request):
     return render(request, 'products/form.html', {'action': 'Create'})
 
 
+@login_required(login_url='login')
 def product_update(request, pk):
     """Update an existing product."""
     product = get_object_or_404(Product, pk=pk)
@@ -179,6 +184,7 @@ def product_update(request, pk):
     return render(request, 'products/form.html', context)
 
 
+@login_required(login_url='login')
 @require_POST
 def product_delete(request, pk):
     """Delete a product (AJAX endpoint)."""
@@ -208,6 +214,7 @@ def product_delete(request, pk):
         }, status=400)
 
 
+@login_required(login_url='login')
 @ensure_csrf_cookie
 def upload_csv(request):
     """Handle CSV file upload and initiate processing."""
@@ -258,6 +265,7 @@ def upload_csv(request):
     return render(request, 'products/upload.html')
 
 
+@login_required(login_url='login')
 def upload_progress(request, job_id):
     """SSE endpoint for real-time upload progress."""
     def event_stream():
@@ -302,6 +310,7 @@ def upload_progress(request, job_id):
     return response
 
 
+@login_required(login_url='login')
 def upload_status(request, job_id):
     """Get upload job status (polling fallback)."""
     upload_job = get_object_or_404(UploadJob, id=job_id)
@@ -321,6 +330,7 @@ def upload_status(request, job_id):
     return JsonResponse(data)
 
 
+@login_required(login_url='login')
 def upload_jobs(request):
     """Display upload job history."""
     jobs = UploadJob.objects.all().order_by('-created_at')
@@ -337,6 +347,7 @@ def upload_jobs(request):
     return render(request, 'products/upload_jobs.html', context)
 
 
+@login_required(login_url='login')
 @require_POST
 def bulk_activate(request):
     """Bulk activate products (AJAX endpoint)."""
@@ -370,6 +381,7 @@ def bulk_activate(request):
         return JsonResponse({'error': str(e)}, status=400)
 
 
+@login_required(login_url='login')
 @require_POST
 def bulk_deactivate(request):
     """Bulk deactivate products (AJAX endpoint)."""
@@ -403,6 +415,7 @@ def bulk_deactivate(request):
         return JsonResponse({'error': str(e)}, status=400)
 
 
+@login_required(login_url='login')
 @require_POST
 def bulk_delete_view(request):
     """Bulk delete products (AJAX endpoint) - async task."""
@@ -422,6 +435,7 @@ def bulk_delete_view(request):
         return JsonResponse({'error': str(e)}, status=400)
 
 
+@login_required(login_url='login')
 def export_products(request):
     """Export products to CSV."""
     # Start async export

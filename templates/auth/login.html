@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-gray-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Product Importer</title>
+    
+    <!-- TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Alpine.js for interactivity -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        [x-cloak] { display: none !important; }
+        
+        .form-input {
+            background: white;
+            transition: all 0.3s ease;
+            border: 1.5px solid #e5e7eb;
+        }
+        
+        .form-input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            outline: none;
+        }
+        
+        .btn-login {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);
+        }
+        
+        .btn-login:active {
+            transform: translateY(0px);
+        }
+        
+        .logo-glow {
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+        }
+    </style>
+</head>
+<body class="h-full bg-gradient-to-br from-gray-50 to-gray-100" x-data="{ loading: false }">
+    <div class="min-h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <!-- Login Card -->
+        <div class="w-full max-w-md z-10">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <div class="flex justify-center mb-4">
+                    <div class="relative logo-glow">
+                        <div class="bg-indigo-600 rounded-full p-4">
+                            <i class="fas fa-boxes text-3xl text-white"></i>
+                        </div>
+                    </div>
+                </div>
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">Product Importer</h1>
+                <p class="text-gray-600 text-base">Manage your products with ease</p>
+            </div>
+            
+            <!-- Login Form Card -->
+            <div class="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+                {% if error_message %}
+                <div class="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 animate-pulse">
+                    <div class="flex items-center">
+                        <i class="fas fa-exclamation-circle text-red-600 mr-3"></i>
+                        <p class="text-red-800 font-medium">{{ error_message }}</p>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <form method="POST" action="{% url 'login' %}" @submit="loading = true" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <!-- Username Field -->
+                    <div class="relative">
+                        <label for="username" class="block text-sm font-semibold text-gray-900 mb-2">
+                            <i class="fas fa-user mr-2"></i>Username
+                        </label>
+                        <div class="relative">
+                            <input
+                                type="text"
+                                id="username"
+                                name="username"
+                                required
+                                class="form-input w-full px-4 py-3 rounded-lg focus:outline-none font-medium"
+                                placeholder="Enter your username"
+                                autocomplete="username"
+                            />
+                            <i class="fas fa-user absolute right-3 top-3.5 text-gray-400 text-lg"></i>
+                        </div>
+                    </div>
+                    
+                    <!-- Password Field -->
+                    <div class="relative">
+                        <label for="password" class="block text-sm font-semibold text-gray-900 mb-2">
+                            <i class="fas fa-lock mr-2"></i>Password
+                        </label>
+                        <div class="relative" x-data="{ showPassword: false }">
+                            <input
+                                :type="showPassword ? 'text' : 'password'"
+                                id="password"
+                                name="password"
+                                required
+                                class="form-input w-full px-4 py-3 rounded-lg focus:outline-none font-medium"
+                                placeholder="Enter your password"
+                                autocomplete="current-password"
+                            />
+                            <button
+                                type="button"
+                                @click="showPassword = !showPassword"
+                                class="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                                <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'" class="text-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <button
+                        type="submit"
+                        :disabled="loading"
+                        class="btn-login w-full py-3 px-4 rounded-lg text-white font-bold text-lg uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    >
+                        <span x-show="!loading" class="flex items-center">
+                            <i class="fas fa-sign-in-alt mr-2"></i>
+                            Login
+                        </span>
+                        <span x-show="loading" class="flex items-center">
+                            <i class="fas fa-spinner fa-spin mr-2"></i>
+                            Logging in...
+                        </span>
+                    </button>
+                </form>
+                
+                <!-- Info Box -->
+                <div class="mt-8 pt-8 border-t border-gray-200">
+                    <div class="bg-indigo-50 rounded-lg p-4 border border-indigo-200">
+                        <p class="text-indigo-900 text-sm text-center">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            Use Django admin credentials to log in
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Footer -->
+            <div class="mt-8 text-center">
+                <p class="text-gray-600 text-sm">
+                    <i class="fas fa-lock mr-2"></i>
+                    Secure login with JWT authentication
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Remove loading state on page unload
+        window.addEventListener('unload', function() {
+            document.querySelector('[x-data]').__x.$data.loading = false;
+        });
+    </script>
+</body>
+</html>

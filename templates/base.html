@@ -253,6 +253,10 @@
                             <span class="text-sm text-gray-700 flex items-center px-3 py-1 rounded-full bg-gray-100">
                                 <i class="fas fa-user-circle mr-2 text-indigo-600"></i>{{ user.username }}
                             </span>
+                            <a href="{% url 'tokens' %}" 
+                               class="inline-flex items-center px-4 py-2 border border-blue-300 rounded-lg shadow-sm text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 btn-hover-lift">
+                                <i class="fas fa-key mr-2"></i>API Tokens
+                            </a>
                         {% endif %}
                         <a href="/admin/" 
                            class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 btn-hover-lift">
@@ -262,6 +266,17 @@
                            class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white gradient-indigo hover:shadow-lg btn-hover-lift">
                             <i class="fas fa-tasks mr-2"></i>Celery Monitor
                         </a>
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'logout' %}" 
+                               class="inline-flex items-center px-4 py-2 border border-red-300 rounded-lg shadow-sm text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 btn-hover-lift">
+                                <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                            </a>
+                        {% else %}
+                            <a href="{% url 'login' %}" 
+                               class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white gradient-indigo hover:shadow-lg btn-hover-lift">
+                                <i class="fas fa-sign-in-alt mr-2"></i>Login
+                            </a>
+                        {% endif %}
                     </div>
                     
                     <!-- Mobile menu button -->
